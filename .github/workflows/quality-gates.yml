@@ -1,0 +1,108 @@
+name: quality-gates
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  gate-1-spec:
+    name: gate-1-spec
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install -g @fission-ai/openspec@1.13.0
+      - name: Every requirement has a scenario
+        run: openspec validate --all --strict --no-interactive
+
+  tests:
+    name: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+      - name: Tests generated from spec
+        run: mvn -B test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: |
+            target/surefire-reports/
+            target/site/jacoco/
+          if-no-files-found: ignore
+
+  gate-2-mutation:
+    name: gate-2-mutation
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+      - name: Mutation score >= mutationThreshold
+        run: mvn -B test-compile org.pitest:pitest-maven:mutationCoverage
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pit-reports
+          path: target/pit-reports/
+          if-no-files-found: ignore
+
+  req-coverage:
+    name: req-coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Every scenario has a test
+        run: python scripts/req_coverage.py --min 100
+
+  report:
+    name: report
+    needs: [gate-1-spec, tests, gate-2-mutation, req-coverage]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: test-reports
+          path: target/
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: pit-reports
+          path: target/pit-reports/
+      - name: Build quality report
+        run: |
+          python scripts/quality_report.py > quality-report.md
+          cat quality-report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Post report to PR
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: quality-report
+          path: quality-report.md
