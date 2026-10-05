@@ -1,0 +1,13 @@
+diff --git a/src/main/java/demo/text/TextUtils.java b/src/main/java/demo/text/TextUtils.java
+index 9bd0c27..a08a4d3 100644
+--- a/src/main/java/demo/text/TextUtils.java
++++ b/src/main/java/demo/text/TextUtils.java
+@@ -7,7 +7,7 @@ public final class TextUtils {
+ 
+     public static boolean equals(String a, String b) {
+         if (a == b) return true;
+-        if (a == null || b == null) return false;
++        if (b == null) return false;
+         return a.equals(b);
+     }
+ }

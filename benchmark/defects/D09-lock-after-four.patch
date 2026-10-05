@@ -1,0 +1,13 @@
+diff --git a/src/main/java/demo/auth/LoginService.java b/src/main/java/demo/auth/LoginService.java
+index 093546d..395957d 100644
+--- a/src/main/java/demo/auth/LoginService.java
++++ b/src/main/java/demo/auth/LoginService.java
+@@ -27,7 +27,7 @@ public class LoginService {
+             return LoginResult.SUCCESS;
+         }
+         int attempts = failedAttempts.merge(user, 1, Integer::sum);
+-        if (attempts >= MAX_FAILED_ATTEMPTS) {
++        if (attempts >= MAX_FAILED_ATTEMPTS - 1) {
+             lockedUsers.add(user);
+         }
+         return LoginResult.FAILURE;

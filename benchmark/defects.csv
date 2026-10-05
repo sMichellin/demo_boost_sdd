@@ -1,0 +1,11 @@
+id,module,requirement_id,description
+D01-equals-ignore-case,TextUtils,TXT-EQ-01,equals() ignores case (equalsIgnoreCase)
+D02-null-pair-not-equal,TextUtils,TXT-EQ-02,"Identity check removed, so equals(null, null) returns false"
+D03-null-left-npe,TextUtils,TXT-EQ-03,"Null check on the first argument removed, equals(null, ""abc"") throws NPE"
+D04-reference-equality,TextUtils,TXT-EQ-04,Strings compared by reference instead of content
+D05-trim-before-compare,TextUtils,text-equality (no scenario),"Surrounding whitespace ignored, "" abc"" equals ""abc"""
+D06-counter-not-reset,LoginService,AUTH-LOCK-02,Successful login does not reset the failed-login counter
+D07-lock-checked-after-password,LoginService,AUTH-LOCK-01,Locked account still logs in with the correct password
+D08-password-case-insensitive,LoginService,auth-lockout (no scenario),Password compared case-insensitively
+D09-lock-after-four,LoginService,AUTH-LOCK-02,Account locked after 4 failed logins instead of 5
+D10-off-by-one-lockout,LoginService,AUTH-LOCK-01,Account locked after 6 failed logins instead of 5
