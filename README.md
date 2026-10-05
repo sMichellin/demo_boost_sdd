@@ -4,6 +4,8 @@
 
 **Нам не хватало не тестов, нам не хватало уверенности.** Здесь спецификация становится оракулом для сгенерированных тестов, каждый гейт в CI блокирует merge, а вместо «N passed» в PR приходят три метрики: mutation score, покрытие требований и defect escape rate.
 
+Сценарий показа с объяснениями: [DEMO.md](DEMO.md).
+
 Архитектура: [architecture_java.md](architecture_java.md) (реализована в этом репозитории), [architecture_python.md](architecture_python.md) (тот же контур на Python / pytest / Poetry / Podman).
 
 ## Контур
@@ -66,7 +68,7 @@ mvn -B test-compile org.pitest:pitest-maven:mutationCoverage     # Gate 2, по�
 python3 scripts/req_coverage.py --min 100                        # покрытие требований
 ```
 
-Замер на `main` (maven:3.9-eclipse-temurin-17): mutation score 94% (17/18), покрытие требований 100% (6/6), бенчмарк `from-spec: caught 8 of 10`, `from-code: caught 2 of 10`. Числа зависят от модели и промпта, которыми сгенерированы тесты: в докладе важен способ измерения, а не процент.
+Замер на `main` (maven:3.9-eclipse-temurin-17): mutation score 94% (17/18), покрытие требований 100% (6/6), бенчмарк `from-spec: caught 8 of 10`, `from-code: caught 2 of 10`. Числа зависят от модели и промпта, которыми сгенерированы тесты: в докладе важен способ измерения, а не процент. Разбор каждого числа: [DEMO.md, раздел 3](DEMO.md#3-как-читать-замер).
 
 ## История и теги
 
@@ -89,6 +91,7 @@ python3 scripts/req_coverage.py --min 100                        # покрыт�
 | `step-12` | Бенчмарк |
 | `step-13` | README |
 | `v1.0.0` | Демо готово |
+| `v1.0.1` | Actions на Node 24, runner `ubuntu-24.04`, ruleset для `main`, сценарий показа |
 
 ```bash
 git checkout step-06   # пример: состояние после шага 6
