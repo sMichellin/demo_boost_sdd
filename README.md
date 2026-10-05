@@ -25,7 +25,7 @@ flowchart LR
 ## Что нужно
 
 - JDK 17 и Maven 3.9+
-- Node 20+ и OpenSpec: `npm install -g @fission-ai/openspec@1.13.0`
+- Node 22+ и OpenSpec: `npm install -g @fission-ai/openspec@1.13.0`
 - Python 3.11+ (только стандартная библиотека)
 
 Без локальной Java можно запускать Maven в контейнере:
@@ -96,7 +96,14 @@ git checkout step-06   # пример: состояние после шага 6
 
 ## Настройка GitHub
 
-В Settings → Branches → `main` включить «Require status checks to pass» и отметить `gate-1-spec`, `tests`, `gate-2-mutation`, `req-coverage`. После этого PR из `demo/c` и `demo/e` не мержатся.
+Ветку `main` защищает ruleset `main: quality gates` (Settings → Rules → Rulesets):
+
+- цель: ветка по умолчанию (`~DEFAULT_BRANCH`);
+- изменения только через pull request (аппрув не обязателен);
+- обязательные проверки от GitHub Actions: `gate-1-spec`, `tests`, `gate-2-mutation`, `req-coverage`;
+- запрет удаления ветки и force-push.
+
+Имена проверок совпадают с id jobs в `quality-gates.yml`; при переименовании job ruleset нужно обновить. PR из `demo/c` и `demo/e` не мержатся.
 
 ## Ограничения
 
