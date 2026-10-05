@@ -368,17 +368,24 @@ and SHALL unlock it after 15 minutes.
 - **WHEN** a 6th attempt is made
 - **THEN** the account is locked
 
+#### Scenario: AUTH-LOCK-02 successful login resets counter
+- **GIVEN** 4 failed logins
+- **WHEN** a successful login is made
+- **THEN** the failed-login counter is reset to 0
+
 #### Scenario: AUTH-LOCK-03 unlock after timeout
 - **GIVEN** a locked account
 - **WHEN** 15 minutes have passed
 - **THEN** the user can log in again
 ```
 
+MODIFIED-требование заменяет блок целиком, поэтому дельта повторяет все действующие сценарии: без AUTH-LOCK-02 `validate --strict` падает.
+
 Сломанная дельта (ветка `demo/c`, `openspec/changes/broken-no-scenario/`): то же требование **без** блока `#### Scenario`.
 
 ```bash
-openspec validate add-lockout-reset --strict    # ok
-openspec validate broken-no-scenario --strict   # fail → merge заблокирован
+openspec validate add-lockout-reset --strict --no-interactive    # ok
+openspec validate broken-no-scenario --strict --no-interactive   # fail → merge заблокирован
 ```
 
 **Готово, когда:** PR из `demo/c` красный на job `gate-1-spec`.
