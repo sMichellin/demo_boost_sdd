@@ -1,5 +1,13 @@
 schema: spec-driven
 
+context: |
+  Demo for the talk "AI-native testing" (AI BOOST '26). See openspec/project.md.
+  Tech stack: Java 17, Maven, JUnit 5, PIT, JaCoCo, GitHub Actions.
+  Every requirement uses SHALL/MUST and has at least one scenario.
+  Scenario headers start with an ID: TXT-EQ-01, AUTH-LOCK-02.
+  Tests derived from a scenario are tagged @Tag("<ID>") in src/test/java/demo/fromspec.
+  Expected values come only from THEN lines, never from the implementation.
+
 # Project context (optional)
 # This is shown to AI when creating artifacts.
 # Add your tech stack, conventions, style guides, domain knowledge, etc.
