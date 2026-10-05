@@ -27,7 +27,7 @@ public class LoginService {
             return LoginResult.SUCCESS;
         }
         int attempts = failedAttempts.merge(user, 1, Integer::sum);
-        if (attempts > MAX_FAILED_ATTEMPTS) { // BUG: off-by-one, спека требует блокировку после 5 неудач
+        if (attempts >= MAX_FAILED_ATTEMPTS) {
             lockedUsers.add(user);
         }
         return LoginResult.FAILURE;
