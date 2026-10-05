@@ -63,11 +63,13 @@ flowchart LR
 ```text
 ai-native-qa-demo/
 ├── README.md                         # Краткое описание и как запустить демо
-├── ARCHITECTURE.md                   # Этот документ
+├── architecture_java.md              # Этот документ
 ├── AGENTS.md                         # Правила для AI-агента (оракул = спека)
+├── CLAUDE.md                         # Импортирует AGENTS.md для Claude Code
 ├── pom.xml                           # JUnit 5, JaCoCo, PIT с mutationThreshold
 │
 ├── openspec/
+│   ├── config.yaml                   # Конфиг OpenSpec 1.x (context для агента)
 │   ├── project.md                    # Контекст проекта для агента
 │   ├── specs/                        # Источник истины: текущие требования
 │   │   ├── text-equality/spec.md     # Сравнение строк (сценарии A, B, E)
@@ -81,7 +83,9 @@ ai-native-qa-demo/
 │
 ├── src/main/java/demo/
 │   ├── text/TextUtils.java           # equals() с дефектом equalsIgnoreCase
-│   └── auth/LoginService.java        # Счётчик неудачных входов, блокировка
+│   └── auth/
+│       ├── LoginResult.java          # SUCCESS / FAILURE / LOCKED
+│       └── LoginService.java         # Счётчик неудачных входов, блокировка
 │
 ├── src/test/java/demo/
 │   ├── fromcode/                     # Тесты, сгенерированные ИЗ КОДА (антипример)
@@ -143,7 +147,13 @@ the same characters in the same case.
 #### Scenario: TXT-EQ-03 null and non-null are not equal
 - **WHEN** comparing null and "abc"
 - **THEN** the result is false
+
+#### Scenario: TXT-EQ-04 same characters in the same case are equal
+- **WHEN** comparing two separate string instances "abc" and "abc"
+- **THEN** the result is true
 ```
+
+TXT-EQ-04 нужен Gate 2: без позитивного сценария ветка `return a.equals(b)` не имеет оракула, и мутант «вернуть false» выживает.
 
 ```markdown
 # auth-lockout
@@ -183,9 +193,9 @@ public static boolean equals(String a, String b) {
 
 | Job | Команда | Блокирует, если |
 |---|---|---|
-| `gate-1-spec` | `openspec validate --strict` | Требование без сценария, нарушен формат дельты |
+| `gate-1-spec` | `openspec validate --all --strict --no-interactive` | Требование без сценария, нарушен формат дельты |
 | `tests` | `mvn -B test` | Падает тест из спеки |
-| `gate-2-mutation` | `mvn -B org.pitest:pitest-maven:mutationCoverage` | Mutation score ниже `mutationThreshold` (по умолчанию 80) |
+| `gate-2-mutation` | `mvn -B test-compile org.pitest:pitest-maven:mutationCoverage` | Mutation score ниже `mutationThreshold` (по умолчанию 80) |
 | `req-coverage` | `python scripts/req_coverage.py --min 100` | Сценарий из спеки без теста |
 | `report` | `python scripts/quality_report.py >> $GITHUB_STEP_SUMMARY` | Не блокирует, публикует сводку в PR |
 
@@ -308,7 +318,10 @@ mvn -B test -Pdemo-from-code   # зелёный: дефект закреплён
 Вот сценарии из openspec/specs/text-equality/spec.md и
 openspec/specs/auth-lockout/spec.md: [вставить]. Вот сигнатуры:
 TextUtils.equals(String, String): boolean;
-LoginService.login(String, String): LoginResult.
+LoginService(Map<String, String> passwords);
+LoginService.login(String, String): LoginResult;
+LoginService.isLocked(String): boolean;
+LoginService.failedAttempts(String): int.
 Для каждого сценария напиши один JUnit 5 тест в src/test/java/demo/fromspec/,
 пометь его @Tag("<ID сценария>"), в @DisplayName продублируй название
 сценария. Ожидаемые значения бери только из THEN. Код реализации не читай.
@@ -324,11 +337,13 @@ mvn -B test   # красный: TXT-EQ-01 и AUTH-LOCK-01 падают
 
 **Промпт:**
 ```text
-В ветке demo/e создай src/test/java/demo/fromspec/WeakCoverageTest.java:
+В ветке demo/e замени тесты из спеки на src/test/java/demo/fromspec/WeakCoverageTest.java:
 тесты вызывают все методы TextUtils и LoginService, но проверяют только
-отсутствие исключений (без содержательных assert). Цель: высокое line
-coverage при низком mutation score.
+отсутствие исключений (без содержательных assert). Теги сценариев оставь.
+Цель: высокое line coverage при низком mutation score.
 ```
+
+Тесты из спеки удаляются: если оставить их рядом, они убивают мутантов и Gate 2 остаётся зелёным. Теги сценариев сохранены, поэтому `req-coverage` зелёный: покрытие требований по тегам тоже можно «накрутить», ловит это только mutation score.
 
 ```bash
 git checkout -b demo/e
